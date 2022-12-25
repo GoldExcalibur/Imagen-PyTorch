@@ -1,0 +1,66 @@
+model:
+  base_learning_rate: 2.0e-04 #2.0e-07
+  target: ldm.models.diffusion.super_resolution_model.SuperResolutionModel
+  params:
+    linear_start: 0.00015
+    linear_end: 0.0195
+    log_every_t: 200
+    timesteps: 2000 # 4000 
+    first_stage_key: image
+    image_size: 256
+    channels: 3
+    monitor: val/loss_simple_ema
+    learn_logvar: False
+    conditioning_key: 'concat'
+    context_keys: ['c_concat']
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        image_size: 256
+        in_channels: 6
+        out_channels: 3
+        model_channels: 128 #224
+        attention_resolutions:
+        # note: this isn\t actually the resolution but
+        # the downsampling factor, i.e. this corresnponds to
+        # attention on spatial resolution 8,16,32, as the
+        # spatial reolution of the latents is 64 for f4
+        - 16
+        # - 8
+        # - 4
+        # - 2
+        num_res_blocks: 3
+        channel_mult:
+        - 1
+        - 2
+        - 4
+        - 4 
+        - 8
+        - 8 
+        num_head_channels: 128
+data:
+  target: ldm.data.ray_reader.SRDataLoader
+  params:
+    batch_size: 4
+    train_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/yinzihao/data/tuchong/background_sr_256
+    test_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/yinzihao/data/tuchong/background_sr_256
+    val_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/yinzihao/data/tuchong/background_sr_256
+    shuffle: False 
+    size: 64 
+    target_size: 256
+    im_key: image
+    filter: False 
+   
+
+
+lightning:
+  callbacks:
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 2000
+        max_images: 8
+        increase_log_steps: False
+
+  trainer:
+    benchmark: True

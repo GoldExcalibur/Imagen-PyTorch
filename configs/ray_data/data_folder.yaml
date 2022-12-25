@@ -1,0 +1,10 @@
+data:
+  target: ldm.data.ray_reader.RayDataLoader
+  params:
+    batch_size: 4
+    train_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/liuchang.lab/data/tuchong/
+    test_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/liuchang.lab/data/tuchong/
+    val_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/liuchang.lab/data/tuchong/
+    shuffle: False
+    size: 64
+  

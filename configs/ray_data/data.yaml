@@ -1,0 +1,8 @@
+data:
+  target: ldm.data.ray_reader.RayReader
+  params:
+    batch_size: 4
+    hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/liuchang.lab/data/tuchong/
+    shuffle: False
+    size: 64
+  

@@ -1,0 +1,64 @@
+model:
+  base_learning_rate: 1.0e-06
+  target: ldm.models.diffusion.ddpm.DDPM
+  params:
+    linear_start: 0.00015
+    linear_end: 0.0195
+    log_every_t: 200
+    timesteps: 2000
+    first_stage_key: image
+    image_size: 16
+    channels: 3
+    monitor: val/loss_simple_ema
+    learn_logvar: False
+    loss_type: l2
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        image_size: 16
+        in_channels: 3
+        out_channels: 3
+        model_channels: 224
+        attention_resolutions:
+        # note: this isn\t actually the resolution but
+        # the downsampling factor, i.e. this corresnponds to
+        # attention on spatial resolution 8,16,32, as the
+        # spatial reolution of the latents is 64 for f4
+        - 4
+        - 2
+        num_res_blocks: 3
+        channel_mult:
+        - 1
+        - 2
+        - 3
+        - 4
+        num_head_channels: 32
+data:
+  target: main.DataModuleFromConfig
+  params:
+    batch_size: 48
+    num_workers: 5
+    wrap: false
+    train:
+      target: ldm.data.facelet.FaceBase
+      params:
+        size: 16
+        path: 'face_100w'
+    validation:
+      target: ldm.data.facelet.FaceBase
+      params:
+        size: 16
+        path: 'face'
+
+
+lightning:
+  callbacks:
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 1000
+        max_images: 8
+        increase_log_steps: False
+
+  trainer:
+    benchmark: True

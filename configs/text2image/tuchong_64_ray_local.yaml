@@ -1,0 +1,69 @@
+model:
+  base_learning_rate: 1.0e-06
+  target: ldm.models.diffusion.text2image_model.Text2ImageModel
+  params:
+    linear_start: 0.00015
+    linear_end: 0.0195
+    log_every_t: 200
+    timesteps: 2000 
+    first_stage_key: image
+    image_size: 64
+    channels: 3
+    monitor: val/loss_simple_ema
+    learn_logvar: False
+    loss_type: l2
+    conditioning_key: 'crossattn'
+    context_keys: ['c_crossattn']
+    text_model_pth: '/mnt/bd/yinzihaodata/pretrained_models/t5_base_chn'
+    text_pad_type: 'max_length'
+    max_len: 256
+    unet_config:
+      target: ldm.modules.diffusionmodules.openaimodel.UNetModel
+      params:
+        image_size: 64
+        in_channels: 3
+        out_channels: 3
+        model_channels: 224
+        attention_resolutions:
+        # note: this isn\t actually the resolution but
+        # the downsampling factor, i.e. this corresnponds to
+        # attention on spatial resolution 8,16,32, as the
+        # spatial reolution of the latents is 64 for f4
+        - 4
+        - 2
+        num_res_blocks: 3
+        channel_mult:
+        - 1
+        - 2
+        - 3
+        - 4
+        num_head_channels: 32
+data:
+  target: ldm.data.ray_reader.Text2ImageDataLoader
+  params:
+    batch_size: 48
+    shuffle: False
+    # train_hdfs_root: hdfs://haruna/home/byte_arnold_lq_vc/yinweidong/zmldata/20220101/tuchong500m-image
+    # val_hdfs_root: hdfs://haruna/home/byte_arnold_lq_vc/yinweidong/zmldata/20220101/tuchong500m-image
+    # test_hdfs_root: hdfs://haruna/home/byte_arnold_lq_vc/yinweidong/zmldata/20220101/tuchong500m-image
+    train_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/yinzihao/data/tuchong/image_64_chn_keywords_remark
+    test_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/yinzihao/data/tuchong/image_64_chn_keywords_remark
+    val_hdfs_root: hdfs://haruna/home/byte_ailab_vc_video_summarization/user/yinzihao/data/tuchong/image_64_chn_keywords_remark
+    size: 64
+    im_key: imbytes
+    # text_key: keywords 
+    text_key: remark
+    filter: False
+
+
+lightning:
+  callbacks:
+    image_logger:
+      target: main.ImageLogger
+      params:
+        batch_frequency: 10000 #1000
+        max_images: 8
+        increase_log_steps: False
+
+  trainer:
+    benchmark: True
